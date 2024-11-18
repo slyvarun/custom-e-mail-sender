@@ -1,0 +1,45 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu("Gmail Export")
+    .addItem("Export Emails", "fetchEmailsToSheet")
+    .addToUi();
+}
+
+function fetchEmailsToSheet() {
+  var SPREADSHEET_ID = "your_spreadsheet_id_here"; // Replace with your spreadsheet ID
+  var SHEET_NAME = "Sheet1"; // Replace with your sheet name
+
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    SpreadsheetApp.getActiveSpreadsheet().toast("Sheet not found. Check the Sheet Name.", "Error", 5);
+    return;
+  }
+
+  sheet.clear();
+  sheet.appendRow(["First Name", "Last Name", "From Email", "Subject", "Date"]);
+
+  var query = "is:unread";
+  var threads = GmailApp.search(query, 0, 50);
+  var messages = GmailApp.getMessagesForThreads(threads);
+
+  for (var i = 0; i < messages.length; i++) {
+    var threadMessages = messages[i];
+    for (var j = 0; j < threadMessages.length; j++) {
+      var message = threadMessages[j];
+      var fromEmail = message.getFrom();
+      var subject = message.getSubject();
+      var date = message.getDate();
+
+      var nameMatch = fromEmail.match(/^(.*) <(.*)>$/);
+      var fullName = nameMatch ? nameMatch[1] : "";
+      var email = nameMatch ? nameMatch[2] : fromEmail;
+      var nameParts = fullName.split(" ");
+      var firstName = nameParts[0] || "";
+      var lastName = nameParts.slice(1).join(" ") || "";
+
+      sheet.appendRow([firstName, lastName, email, subject, date]);
+    }
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast("Emails exported successfully!", "Success", 5);
+}

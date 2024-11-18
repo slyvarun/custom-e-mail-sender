@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Email Sender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, textarea, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body style="background-color: yellowgreen;">
+
+    <h1>Send Customized Emails from CSV</h1>
+    
+    <label for="csvFile">Upload CSV File:</label>
+    <input type="file" id="csvFile" accept=".csv">
+    
+    <label for="emailTemplate">Customize Email Content:</label>
+    <textarea id="emailTemplate" rows="10" placeholder="Customize your email content with placeholders like {{name}}"></textarea>
+    
+    <button id="sendEmailsBtn">Send Emails</button>
+
+    <div id="status"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $('#sendEmailsBtn').on('click', function() {
+            let file = document.getElementById('csvFile').files[0];
+            let emailTemplate = document.getElementById('emailTemplate').value;
+
+            if (!file || !emailTemplate) {
+                alert('Please upload a CSV file and enter email content.');
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append('csvFile', file);
+            formData.append('emailTemplate', emailTemplate);
+
+            $.ajax({
+                url: '/send-emails',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#status').text(response.message);
+                },
+                error: function(err) {
+                    $('#status').text('Error occurred: ' + err.responseText);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
